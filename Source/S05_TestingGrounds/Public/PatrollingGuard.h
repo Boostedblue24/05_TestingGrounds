@@ -16,8 +16,7 @@ class S05_TESTINGGROUNDS_API APatrollingGuard : public ATP_ThirdPersonCharacter
 	
 public:
 
-	UPROPERTY(EditInstanceOnly, Category = "Patrol") /// TODO remove or create getter
-	TArray<AActor*> PatrolPointsCPP;
+
 
 protected:
 
