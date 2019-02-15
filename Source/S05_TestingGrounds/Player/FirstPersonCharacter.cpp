@@ -1,7 +1,7 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
-#include "S05_TestingGroundsCharacter.h"
-#include "S05_TestingGroundsProjectile.h"
+#include "FirstpersonCharacter.h"
+#include "../Weapons/BallProjectile.h"
 #include "Animation/AnimInstance.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -15,9 +15,9 @@
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
 //////////////////////////////////////////////////////////////////////////
-// AS05_TestingGroundsCharacter
+// AFirstpersonCharacter
 
-AS05_TestingGroundsCharacter::AS05_TestingGroundsCharacter()
+AFirstpersonCharacter::AFirstpersonCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
@@ -59,15 +59,15 @@ AS05_TestingGroundsCharacter::AS05_TestingGroundsCharacter()
 	// Note: The ProjectileClass and the skeletal mesh/anim blueprints for Mesh1P, FP_Gun, and VR_Gun 
 	// are set in the derived blueprint asset named MyCharacter to avoid direct content references in C++.
 
-	// Create VR Controllers.
+	//// Create VR Controllers.
 	R_MotionController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("R_MotionController"));
 	R_MotionController->MotionSource = FXRMotionControllerBase::RightHandSourceId;
 	R_MotionController->SetupAttachment(RootComponent);
 	L_MotionController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("L_MotionController"));
 	L_MotionController->SetupAttachment(RootComponent);
 
-	// Create a gun and attach it to the right-hand VR controller.
-	// Create a gun mesh component
+	//// Create a gun and attach it to the right-hand VR controller.
+	//// Create a gun mesh component
 	VR_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("VR_Gun"));
 	VR_Gun->SetOnlyOwnerSee(true);			// only the owning player will see this mesh
 	VR_Gun->bCastDynamicShadow = false;
@@ -84,7 +84,7 @@ AS05_TestingGroundsCharacter::AS05_TestingGroundsCharacter()
 	//bUsingMotionControllers = true;
 }
 
-void AS05_TestingGroundsCharacter::BeginPlay()
+void AFirstpersonCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
@@ -108,7 +108,7 @@ void AS05_TestingGroundsCharacter::BeginPlay()
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void AS05_TestingGroundsCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+void AFirstpersonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	// set up gameplay key bindings
 	check(PlayerInputComponent);
@@ -118,27 +118,27 @@ void AS05_TestingGroundsCharacter::SetupPlayerInputComponent(class UInputCompone
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
 	// Bind fire event
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AS05_TestingGroundsCharacter::OnFire);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AFirstpersonCharacter::OnFire);
 
 	// Enable touchscreen input
 	EnableTouchscreenMovement(PlayerInputComponent);
 
-	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AS05_TestingGroundsCharacter::OnResetVR);
+	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AFirstpersonCharacter::OnResetVR);
 
 	// Bind movement events
-	PlayerInputComponent->BindAxis("MoveForward", this, &AS05_TestingGroundsCharacter::MoveForward);
-	PlayerInputComponent->BindAxis("MoveRight", this, &AS05_TestingGroundsCharacter::MoveRight);
+	PlayerInputComponent->BindAxis("MoveForward", this, &AFirstpersonCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveRight", this, &AFirstpersonCharacter::MoveRight);
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("TurnRate", this, &AS05_TestingGroundsCharacter::TurnAtRate);
+	PlayerInputComponent->BindAxis("TurnRate", this, &AFirstpersonCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("LookUpRate", this, &AS05_TestingGroundsCharacter::LookUpAtRate);
+	PlayerInputComponent->BindAxis("LookUpRate", this, &AFirstpersonCharacter::LookUpAtRate);
 }
 
-void AS05_TestingGroundsCharacter::OnFire()
+void AFirstpersonCharacter::OnFire()
 {
 	// try and fire a projectile
 	if (ProjectileClass != NULL)
@@ -150,7 +150,7 @@ void AS05_TestingGroundsCharacter::OnFire()
 			{
 				const FRotator SpawnRotation = VR_MuzzleLocation->GetComponentRotation();
 				const FVector SpawnLocation = VR_MuzzleLocation->GetComponentLocation();
-				World->SpawnActor<AS05_TestingGroundsProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
+				World->SpawnActor<ABallProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
 			}
 			else
 			{
@@ -163,7 +163,7 @@ void AS05_TestingGroundsCharacter::OnFire()
 				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
 				// spawn the projectile at the muzzle
-				World->SpawnActor<AS05_TestingGroundsProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+				World->SpawnActor<ABallProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
 			}
 		}
 	}
@@ -186,12 +186,12 @@ void AS05_TestingGroundsCharacter::OnFire()
 	}
 }
 
-void AS05_TestingGroundsCharacter::OnResetVR()
+void AFirstpersonCharacter::OnResetVR()
 {
 	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
 }
 
-void AS05_TestingGroundsCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
+void AFirstpersonCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
 {
 	if (TouchItem.bIsPressed == true)
 	{
@@ -207,7 +207,7 @@ void AS05_TestingGroundsCharacter::BeginTouch(const ETouchIndex::Type FingerInde
 	TouchItem.bMoved = false;
 }
 
-void AS05_TestingGroundsCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
+void AFirstpersonCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
 {
 	if (TouchItem.bIsPressed == false)
 	{
@@ -219,7 +219,7 @@ void AS05_TestingGroundsCharacter::EndTouch(const ETouchIndex::Type FingerIndex,
 //Commenting this section out to be consistent with FPS BP template.
 //This allows the user to turn without using the right virtual joystick
 
-//void AS05_TestingGroundsCharacter::TouchUpdate(const ETouchIndex::Type FingerIndex, const FVector Location)
+//void AFirstpersonCharacter::TouchUpdate(const ETouchIndex::Type FingerIndex, const FVector Location)
 //{
 //	if ((TouchItem.bIsPressed == true) && (TouchItem.FingerIndex == FingerIndex))
 //	{
@@ -254,7 +254,7 @@ void AS05_TestingGroundsCharacter::EndTouch(const ETouchIndex::Type FingerIndex,
 //	}
 //}
 
-void AS05_TestingGroundsCharacter::MoveForward(float Value)
+void AFirstpersonCharacter::MoveForward(float Value)
 {
 	if (Value != 0.0f)
 	{
@@ -263,7 +263,7 @@ void AS05_TestingGroundsCharacter::MoveForward(float Value)
 	}
 }
 
-void AS05_TestingGroundsCharacter::MoveRight(float Value)
+void AFirstpersonCharacter::MoveRight(float Value)
 {
 	if (Value != 0.0f)
 	{
@@ -272,27 +272,27 @@ void AS05_TestingGroundsCharacter::MoveRight(float Value)
 	}
 }
 
-void AS05_TestingGroundsCharacter::TurnAtRate(float Rate)
+void AFirstpersonCharacter::TurnAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
 }
 
-void AS05_TestingGroundsCharacter::LookUpAtRate(float Rate)
+void AFirstpersonCharacter::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
-bool AS05_TestingGroundsCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInputComponent)
+bool AFirstpersonCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInputComponent)
 {
 	if (FPlatformMisc::SupportsTouchInput() || GetDefault<UInputSettings>()->bUseMouseForTouch)
 	{
-		PlayerInputComponent->BindTouch(EInputEvent::IE_Pressed, this, &AS05_TestingGroundsCharacter::BeginTouch);
-		PlayerInputComponent->BindTouch(EInputEvent::IE_Released, this, &AS05_TestingGroundsCharacter::EndTouch);
+		PlayerInputComponent->BindTouch(EInputEvent::IE_Pressed, this, &AFirstpersonCharacter::BeginTouch);
+		PlayerInputComponent->BindTouch(EInputEvent::IE_Released, this, &AFirstpersonCharacter::EndTouch);
 
 		//Commenting this out to be more consistent with FPS BP template.
-		//PlayerInputComponent->BindTouch(EInputEvent::IE_Repeat, this, &AS05_TestingGroundsCharacter::TouchUpdate);
+		//PlayerInputComponent->BindTouch(EInputEvent::IE_Repeat, this, &AFirstpersonCharacter::TouchUpdate);
 		return true;
 	}
 	
