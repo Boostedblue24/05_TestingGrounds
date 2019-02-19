@@ -51,7 +51,6 @@ public:
 
 protected:
 	
-	/** Fires a projectile. */
 	void OnFire();
 
 	/** Resets HMD orientation and position in VR. */

@@ -64,6 +64,9 @@ void AFirstpersonCharacter::BeginPlay()
 
 	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
 	Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+
+	Gun->AnimInstance = Mesh1P->GetAnimInstance();
+	
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -99,8 +102,13 @@ void AFirstpersonCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AFirstpersonCharacter::LookUpAtRate);
 }
 
+
+
 void AFirstpersonCharacter::OnFire()
 {
+	/*if (!ensure(Gun)) { return; }*/
+	
+	Gun->OnFire();
 }
 
 void AFirstpersonCharacter::OnResetVR()
@@ -116,7 +124,7 @@ void AFirstpersonCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, cons
 	}
 	if ((FingerIndex == TouchItem.FingerIndex) && (TouchItem.bMoved == false))
 	{
-		OnFire();
+		Gun->OnFire();
 	}
 	TouchItem.bIsPressed = true;
 	TouchItem.FingerIndex = FingerIndex;
