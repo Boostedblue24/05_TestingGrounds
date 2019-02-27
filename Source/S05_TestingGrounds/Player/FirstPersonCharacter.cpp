@@ -106,7 +106,6 @@ void AFirstpersonCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 
 void AFirstpersonCharacter::OnFire()
 {
-	/*if (!ensure(Gun)) { return; }*/
 	
 	Gun->OnFire();
 }
