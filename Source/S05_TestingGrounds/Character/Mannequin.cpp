@@ -41,16 +41,27 @@ void AMannequin::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (GunBlueprint == NULL) { return; }
+	if (GunBlueprint == nullptr) { return; }
 
 	Gun = GetWorld()->SpawnActor<AGun>(GunBlueprint);
 
-	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
-	Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+	//Attach gun mesh component to either the FP or TP mesh/skeleton depending on if Mannequin is possessed by a PlayerController or not.
+	//doing it here because the skeleton is not yet created in the constructor
+	if (IsPlayerControlled())
+	{
+		
+		Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+	}
+	else
+	{
+		Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+	}
 
-	Gun->AnimInstance = Mesh1P->GetAnimInstance();
+	//Get the anim instance of the meshes that Gun is attached to
+	Gun->AnimInstance1P = Mesh1P->GetAnimInstance();
+	Gun->AnimInstance3P = GetMesh()->GetAnimInstance();
 
-	if (InputComponent != NULL)
+	if (InputComponent != nullptr)
 	{
 		// Bind fire event
 		InputComponent->BindAction("Fire", IE_Pressed, this, &AMannequin::PullTrigger);
@@ -78,6 +89,17 @@ void AMannequin::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
 
+}
+
+void AMannequin::UnPossessed()
+{
+	Super::UnPossessed();
+	if (!ensure(Gun))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Gun not found"));
+		return;
+	}
+	Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 }
 
 void AMannequin::PullTrigger()
