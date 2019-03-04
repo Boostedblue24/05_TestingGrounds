@@ -25,8 +25,6 @@ void ATile::SetPool(UActorPool * InPool)
 	PositionNavMeshBoundsVolume();
 }
 
-
-
 void ATile::PositionNavMeshBoundsVolume()
 {
 	NavMeshBoundsVolume = Pool->Checkout();
@@ -47,10 +45,23 @@ void ATile::PlaceActors(TSubclassOf<AActor> ToSpawn, int MinSpawn, int MaxSpawn,
 {
 	TArray<FSpawnPosition> SpawnPositions = RandomSpawnPositions(MinSpawn, MaxSpawn, Radius, MinScale, MaxScale);
 	
+	
 	for (FSpawnPosition SpawnPosition : SpawnPositions)
 	{
 		PlaceActor(ToSpawn, SpawnPosition);
+		
 	}
+}
+
+void ATile::PlaceAIPawns(TSubclassOf<APawn> ToSpawn, int MinSpawn, int MaxSpawn, float Radius)
+{
+	TArray<FSpawnPosition> SpawnPositions = RandomSpawnPositions(MinSpawn, MaxSpawn, Radius, 1.f, 1.f);
+
+	for (FSpawnPosition SpawnPosition : SpawnPositions)
+	{
+		PlaceAIPawn(ToSpawn, SpawnPosition);	
+	}
+
 }
 
 TArray<FSpawnPosition> ATile::RandomSpawnPositions(int MinSpawn, int MaxSpawn, float Radius, float MinScale, float MaxScale)
@@ -74,10 +85,8 @@ TArray<FSpawnPosition> ATile::RandomSpawnPositions(int MinSpawn, int MaxSpawn, f
 
 		}
 	}
-	return TArray<FSpawnPosition>();
+	return SpawnPositions;
 }
-
-
 
 bool ATile::FindEmptyLocation(FVector& OutLocation, float Radius)
 {
@@ -98,7 +107,7 @@ bool ATile::FindEmptyLocation(FVector& OutLocation, float Radius)
 	return false;
 }
 
-void ATile::PlaceActor(TSubclassOf<AActor> ToSpawn, const FSpawnPosition& SpawnPosition)
+void ATile::PlaceActor(TSubclassOf<AActor> ToSpawn, FSpawnPosition SpawnPosition)
 {
 	AActor * Spawned = GetWorld()->SpawnActor<AActor>(ToSpawn);
 	Spawned->SetActorLocation(SpawnPosition.Location);
@@ -107,6 +116,15 @@ void ATile::PlaceActor(TSubclassOf<AActor> ToSpawn, const FSpawnPosition& SpawnP
 	Spawned->SetActorScale3D(FVector(SpawnPosition.Scale));
 }
 
+void ATile::PlaceAIPawn(TSubclassOf<APawn> ToSpawn, FSpawnPosition SpawnPosition)
+{
+	APawn * Spawned = GetWorld()->SpawnActor<APawn>(ToSpawn);
+	Spawned->SetActorLocation(SpawnPosition.Location);
+	Spawned->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::KeepRelative, false));
+	Spawned->SetActorRotation(FRotator(0, SpawnPosition.Rotation, 0));
+	Spawned->SpawnDefaultController();
+	Spawned->Tags.Add(FName("Enemy"));
+}
 
 // Called when the game starts or when spawned
 void ATile::BeginPlay()
@@ -130,8 +148,6 @@ void ATile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
-
 
 bool ATile::CanSpawnAtLocation(FVector Location, float Radius)
 {
