@@ -6,6 +6,19 @@
 #include "GameFramework/Actor.h"
 #include "Tile.generated.h"
 
+
+USTRUCT()
+struct FSpawnPosition
+{
+	GENERATED_USTRUCT_BODY()
+
+	FVector Location;
+	float Rotation;
+	float Scale;
+
+};
+
+
 class UActorPool;
 
 UCLASS()
@@ -33,21 +46,33 @@ protected:
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Spawning")
+	FVector MinSpawningExtent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Spawning")
+	FVector MaxSpawningExtent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Navigation")
+	FVector NavigationBoundsOffset;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 private:
 
+	
+	
 	AActor * NavMeshBoundsVolume;
 
 	UActorPool * Pool;
+
+	TArray<FSpawnPosition> RandomSpawnPositions(int MinSpawn, int MaxSpawn, float Radius, float MinScale, float MaxScale);
 	
 	void PositionNavMeshBoundsVolume();
 
 	bool FindEmptyLocation(FVector& OutLocation, float Radius);
 
-	void PlaceActor(TSubclassOf<AActor> ToSpawn, FVector SpawnPoint, float Rotation, float Scale);
+	void PlaceActor(TSubclassOf<AActor> ToSpawn, const FSpawnPosition& SpawnPosition);
 
 	bool CanSpawnAtLocation(FVector Location, float Radius);
 
