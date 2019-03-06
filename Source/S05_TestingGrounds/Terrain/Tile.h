@@ -33,18 +33,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Procedural Generation")
 	void PlaceActors(TSubclassOf<AActor> ToSpawn, int MinSpawn = 1, int MaxSpawn = 1, float Radius = 500, float MinScale = 1.f, float MaxScale =1.f);
 
-
 	UFUNCTION(BlueprintCallable, Category = "AI Generation")
 	void PlaceAIPawns(TSubclassOf<APawn> ToSpawn, int MinSpawn = 1, int MaxSpawn = 1, float Radius = 500);
-
-	
-
 
 	UFUNCTION(BlueprintCallable, Category = "Pool")
 	void SetPool(UActorPool * InPool);
 
-	
+	UFUNCTION(BlueprintCallable, Category = "Destroy")
+	void DestroySpawnedActors();
 
+	UFUNCTION(BlueprintCallable, Category = "Destroy")
+	void DestroySpawnedAI();
 
 protected:
 	// Called when the game starts or when spawned
@@ -66,22 +65,31 @@ public:
 
 private:
 
-	
-	
 	AActor * NavMeshBoundsVolume;
 
 	UActorPool * Pool;
 
-	TArray<FSpawnPosition> RandomSpawnPositions(int MinSpawn, int MaxSpawn, float Radius, float MinScale, float MaxScale);
+	TArray<AActor*> SpawnedActors;
+
+	TArray<APawn*>SpawnedAI;
+
+	//Unused function backup
+	/*TArray<FSpawnPosition> RandomSpawnPositions(int MinSpawn, int MaxSpawn, float Radius, float MinScale, float MaxScale);*/
 	
 	void PositionNavMeshBoundsVolume();
 
 	bool FindEmptyLocation(FVector& OutLocation, float Radius);
 
+	template<class T>
+	void RandomlyPlaceActors(TSubclassOf<T> ToSpawn, int MinSpawn = 1, int MaxSpawn = 1, float Radius = 500, float MinScale = 1.f, float MaxScale = 1.f);
+	
 	void PlaceActor(TSubclassOf<AActor> ToSpawn, FSpawnPosition SpawnPosition);
 
-	void PlaceAIPawn(TSubclassOf<APawn> ToSpawn, FSpawnPosition SpawnPosition);
+	void PlaceActor(TSubclassOf<APawn> ToSpawn, FSpawnPosition SpawnPosition);
 
 	bool CanSpawnAtLocation(FVector Location, float Radius);
 
+	
+
 };
+

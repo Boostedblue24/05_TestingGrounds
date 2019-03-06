@@ -11,7 +11,6 @@ AInfiniteTerrainGameMode::AInfiniteTerrainGameMode()
 	NavmeshBoundsVolumePool = CreateDefaultSubobject<UActorPool>(FName("Nav Mesh Bounds Volume Pool"));
 }
 
-
 void AInfiniteTerrainGameMode::AddToPool(ANavMeshBoundsVolume * BoundsVolumeToAdd)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Found volume: %s"), *BoundsVolumeToAdd->GetName());

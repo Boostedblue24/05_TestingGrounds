@@ -107,3 +107,8 @@ void AMannequin::PullTrigger()
 	Gun->OnFire();
 }
 
+void AMannequin::DestroyGun()
+{
+	Gun->Destroy();
+}
+

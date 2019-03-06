@@ -38,6 +38,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void PullTrigger();
 
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void DestroyGun();
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseTurnRate;
@@ -49,7 +52,7 @@ public:
 private:
 
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
-	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
+	UPROPERTY(VisibleAnywhere, Category = Mesh)
 	class USkeletalMeshComponent* Mesh1P;
 
 	/** First person camera */
@@ -58,4 +61,5 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Gun", meta = (AllowPrivateAccess = "true"))
 	AGun * Gun;
+
 };
